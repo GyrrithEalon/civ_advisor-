@@ -23,12 +23,12 @@ class Webserver(commands.Cog):
         async def welcome(request):
             return web.Response(text="Hello, world")
 
-        @routes.post('/testhook')
+        @routes.post(os.getenv('END_POINT_URL'))
         async def testwebhook(request):
             data = await request.json()
             #user = self.bot.get_user(data['user']) or await self.bot.fetch_user(data['user'])
             DIS_CHANNEL = os.getenv('DISCORD_CHANNEL')
-            channel = self.bot.get_channel(DIS_CHANNEL)
+            channel = self.bot.get_channel(int(DIS_CHANNEL))
             #discord_id = user.id
             
             
