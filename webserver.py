@@ -27,7 +27,8 @@ class Webserver(commands.Cog):
         async def testwebhook(request):
             data = await request.json()
             #user = self.bot.get_user(data['user']) or await self.bot.fetch_user(data['user'])
-            channel = self.bot.get_channel(1095084176803377203)
+            DIS_CHANNEL = os.getenv('DISCORD_CHANNEL')
+            channel = self.bot.get_channel(DIS_CHANNEL)
             #discord_id = user.id
             
             
