@@ -10,7 +10,6 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import random
 from sqlhandler import SqlConnection
-from flask import Flask
 
 # =============================================================================
 # Load Env

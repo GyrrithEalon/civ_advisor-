@@ -16,7 +16,11 @@ from dotenv import load_dotenv
 from bot import CommandsHandler
 from webserver import Webserver
 
-#from flask import Flask, request
+#insalls
+
+#pip install py-cord
+#pip install nest_asyncio
+#pip install python-dotenv
 
 
 
