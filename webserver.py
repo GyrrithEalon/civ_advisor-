@@ -42,13 +42,14 @@ class Webserver(commands.Cog):
             return 200
 
         self.webserver_port = os.environ.get('PORT', 5000)
+        self.webserver_address = os.environ.get('IP_ADDRESS', '127.0.0.1')
         app.add_routes(routes)
 
     @tasks.loop()
     async def web_server(self):
         runner = web.AppRunner(app)
         await runner.setup()
-        site = web.TCPSite(runner, host='127.0.0.1', port=self.webserver_port)
+        site = web.TCPSite(runner, host=self.webserver_address, port=self.webserver_port)
         await site.start()
 
     @web_server.before_loop
