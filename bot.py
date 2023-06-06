@@ -60,31 +60,41 @@ class CommandsHandler(commands.Cog):
         print(ctx.channel.id)
         await ctx.respond("Why, you are <@" + str(discord_id) + "> of course, ID: " + str(discord_id))
         
+# =============================================================================
+# Name Regestry Commands
+# =============================================================================
+        
     @commands.slash_command(name='reg-name', guild_ids=[GUILD_ID])
     async def reg_name(self, ctx, civ_name: str):
-        """Add User to Player Registry"""
+        """Add or Update User to Player Registry"""
         discord_id = ctx.author.id
         if self.sql.get_civ_name(discord_id) is None:
             self.sql.insert_player(discord_id, civ_name)
             await ctx.respond("I have added <@" + str(discord_id) + "> as " +
                               civ_name)
         else:
-            self.sql.insert_player(discord_id, civ_name)
+            self.sql.update_player(discord_id, civ_name)
             await ctx.respond("I've updated <@" + str(discord_id) + "> as " + 
                           civ_name)
             
+    @commands.slash_command(name='remove-me', guild_ids=[GUILD_ID])
+    async def remove_name(self, ctx):
+        """Remove User to Player Registry"""
+        discord_id = ctx.author.id
+        if self.sql.get_civ_name(discord_id) is None:
+            await ctx.respond("You are not in the player database.")
+        else:
+            if self.sql.remove_player(discord_id):
+                await ctx.respond("I've removed <@" + str(discord_id) + "> from the database")
+            else:
+                await ctx.respond("Error removing player.")
+            
+    @commands.slash_command(name='get-players', guild_ids=[GUILD_ID])
+    async def get_players(self, ctx):
+        result = self.sql.get_all_players()
+        await ctx.respond("here is the player table: " + str(result))
     
     
-# =============================================================================
-# example of input typing convertion
-# =============================================================================
-    @commands.slash_command(name="roll", guild_ids=[GUILD_ID])    
-    async def roll(self, ctx, dice_number: int, dice_sides: int):
-        dice = [
-            str(random.choice(range(1, dice_sides + 1)))
-            for _ in range(dice_number)
-            ]
-        await ctx.respond(', '.join(dice))
         
 
     

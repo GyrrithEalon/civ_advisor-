@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from bot import CommandsHandler
 from webserver import Webserver
 
-#insalls
+#insalls for miniconda env
 
 #pip install py-cord
 #pip install nest_asyncio

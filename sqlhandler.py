@@ -20,7 +20,7 @@ class SqlConnection():
     
     def __init__ (self, CIV_GAME_DB):
         self.con = sqlite3.connect(CIV_GAME_DB)
-        self.tables = self.get_all_tables()
+        self.verify_tables()
               
     def verify_tables(self):
         cur = self.con.cursor()
@@ -71,6 +71,17 @@ class SqlConnection():
         try:
             cur.execute('UPDATE players SET civ_name = ? WHERE discord_id = ?',
                         (civ_name, discord_id))
+            self.con.commit()
+            cur.close()
+            return True
+        except:
+            cur.close()
+            return False
+        
+    def remove_player(self, discord_id):
+        cur = self.con.cursor()
+        try:
+            cur.execute('DELETE FROM players WHERE discord_id = ?', (discord_id,))
             self.con.commit()
             cur.close()
             return True
