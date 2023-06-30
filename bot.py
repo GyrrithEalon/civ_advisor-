@@ -10,6 +10,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import random
 from sqlhandler import SqlConnection
+from table2ascii import table2ascii as t2a, PresetStyle
 
 # =============================================================================
 # Load Env
@@ -17,6 +18,7 @@ from sqlhandler import SqlConnection
 load_dotenv()
 GUILD = os.getenv('DISCORD_GUILD')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
+EALON_ID = os.getenv('EALON_ID')
 
 # =============================================================================
 # Make a shell bot class
@@ -58,7 +60,25 @@ class CommandsHandler(commands.Cog):
         """Ping tester"""
         discord_id = ctx.author.id
         print(ctx.channel.id)
-        await ctx.respond("Why, you are <@" + str(discord_id) + "> of course, ID: " + str(discord_id))
+        await ctx.respond("Why, you are <@" + str(discord_id) + "> of course.")
+        
+    @commands.slash_command(name='current_games', guild_ids=[GUILD_ID])
+    async def getgames(self, ctx):
+        """Get current_games"""
+        text = t2a(header=["Name", "Active Player", "Turn count"],
+                            body=self.sql.remove_column(self.sql.get_all_games(), 0)
+                            )
+        await ctx.respond(f"```\n{text}\n```")
+        
+    @commands.slash_command(name='purge_games_db', guild_ids=[GUILD_ID])
+    async def purge_table(self, ctx):
+        """Purge the games table"""
+        discord_id = ctx.author.id
+        if str(discord_id) != str(EALON_ID):
+            await ctx.respond("Only <@" + str(EALON_ID) + "> can run that commnand.")
+        else:
+            self.sql.truncate_table("games")
+            await ctx.respond("Games Table Truncated")
         
 # =============================================================================
 # Name Regestry Commands

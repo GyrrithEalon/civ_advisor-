@@ -6,41 +6,123 @@ Created on Sun Jun  4 21:20:56 2023
 """
 from aiohttp import web
 from discord.ext import commands, tasks
-import discord
 import os
 from datetime import datetime
+from sqlhandler import SqlConnection
+from table2ascii import table2ascii as t2a, PresetStyle
 
 app = web.Application()
 routes = web.RouteTableDef()
 
 
+
+
 class Webserver(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot, CIV_GAME_DB):
+        self.bot = bot       
+        self.sql = SqlConnection(CIV_GAME_DB)
         self.web_server.start()
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        #for multi Server access, will need to sort through connecte servers
+        self.channel = self.bot.get_channel(int(os.getenv('DISCORD_CHANNEL')))
+        print(
+            f'{self.channel.name}(id: {self.channel.id})'
+        )
+# =============================================================================
+#         Game Matching processing
+# =============================================================================
+
+        
+        def game_match(self, game_name, civ_name, turn_number):    
+            #preform the fuzzy match for game based on the three values civ gives us
+            #If the name is unuque or does not exsist, it's a quick match
+            game_id = self.sql.get_games_by_name(game_name)
+            if len(game_id) == 1:
+                return game_id[0][0]
+            elif len(game_id) == 0:
+                return None
+            else:
+                return False
+            
+        def ping_gen(self, game_name, civ_name, game_turn):        
+        # Generate ping
+            discord_id = self.sql.get_discord_id(civ_name)
+            if discord_id == None:
+                message = "**{}** Update! Turn {} for {}".format(game_name, 
+                                                                    str(game_turn), 
+                                                                    str(civ_name))
+            else:
+                message = "**{}** Update! Turn {} for <@{}>".format(game_name, 
+                                                                    str(game_turn), 
+                                                                    str(discord_id[0]))
+            return message
+
+            
+                
+        # def make_game_table(self, game_ids):
+        #     for i in range(0,len(game_id)):
+        #         game_values.append(self.sql.get_game(game_id[i][0]))
+
+# =============================================================================
+# Web server Processing
+# =============================================================================
+        #Browser site        
         @routes.get('/')
         async def welcome(request):
-            return web.Response(text="Hello, world")
+            return web.Response(text=t2a(
+                                header=["Name", "Active Player", "Turn count"],
+                                body=self.sql.remove_column(self.sql.get_all_games(), 0)
+                                ))
 
+
+
+# =============================================================================
+# Endpoint Process
+# =============================================================================
+
+        #API Endpoint
         @routes.post(os.getenv('END_POINT_URL'))
-        async def testwebhook(request):
+        async def civ_update(request):
             data = await request.json()
-            #user = self.bot.get_user(data['user']) or await self.bot.fetch_user(data['user'])
-            DIS_CHANNEL = os.getenv('DISCORD_CHANNEL')
-            channel = self.bot.get_channel(int(DIS_CHANNEL))
-            #discord_id = user.id
-            
-            
-            now = datetime.now()            
-            message = "Data From Civ At: " + now.strftime("%Y-%m-%d %H:%M:%S")
-            
+            game_name = data['value1']
+            civ_name = data['value2']
+            game_turn = data['value3']
+
+            #log json for testing
+            now = datetime.now()
             with open("data/" + now.strftime("%Y-%m-%d_%H-%M-%S") + '.json', 'w') as file:
                 file.write(str(data))
-            
-            await channel.send(message)
-            return 200
+                
+            # Check for redundant
+            checked_id = game_match(self, game_name, civ_name, game_turn)
+            if checked_id == None:
+                self.sql.insert_game(game_name, civ_name, game_turn)
+                message = ping_gen(self, game_name, civ_name, game_turn)
+                await self.channel.send(message)
+            elif checked_id == False:
+                return 200
+            else:
+                #Check for redundace ping
+                game_data = self.sql.get_game(checked_id)
+                print(game_data)
+                print((checked_id ,game_name, civ_name, game_turn))
+                if game_data == (checked_id ,game_name, civ_name, int(game_turn)):
+                    return 200
+                else:
+                    self.sql.update_game(checked_id, game_name, civ_name, game_turn)
+                    message = ping_gen(self, game_name, civ_name, game_turn)
+                    await self.channel.send(message)
+                    return 200
 
+
+
+
+
+# =============================================================================
+# Web Server Funcion
+# =============================================================================
         self.webserver_port = os.environ.get('PORT', 5000)
         self.webserver_address = os.environ.get('IP_ADDRESS', '127.0.0.1')
         app.add_routes(routes)
