@@ -55,17 +55,17 @@ class CommandsHandler(commands.Cog):
         response = '\"scout, scout, slinger, settler\", ' + random.choice(great_people)
         await ctx.respond(response)
         
-    @commands.slash_command(name='whoami', guild_ids=[GUILD_ID])
-    async def whoami(self, ctx):
-        """Ping tester"""
-        discord_id = ctx.author.id
-        print(ctx.channel.id)
-        await ctx.respond("Why, you are <@" + str(discord_id) + "> of course.")
+    # @commands.slash_command(name='whoami', guild_ids=[GUILD_ID])
+    # async def whoami(self, ctx):
+    #     """Ping tester"""
+    #     discord_id = ctx.author.id
+    #     print(ctx.channel.id)
+    #     await ctx.respond("Why, you are <@" + str(discord_id) + "> of course.")
         
     @commands.slash_command(name='current_games', guild_ids=[GUILD_ID])
     async def getgames(self, ctx):
         """Get current_games"""
-        text = t2a(header=["Name", "Active Player", "Turn count"],
+        text = t2a(header=["Game", "Player", "Turn"],
                             body=self.sql.remove_column(self.sql.get_all_games(), 0)
                             )
         await ctx.respond(f"```\n{text}\n```")

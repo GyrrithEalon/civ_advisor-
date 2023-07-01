@@ -106,8 +106,6 @@ class Webserver(commands.Cog):
             else:
                 #Check for redundace ping
                 game_data = self.sql.get_game(checked_id)
-                print(game_data)
-                print((checked_id ,game_name, civ_name, game_turn))
                 if game_data == (checked_id ,game_name, civ_name, int(game_turn)):
                     return 200
                 else:
