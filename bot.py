@@ -109,10 +109,10 @@ class CommandsHandler(commands.Cog):
             else:
                 await ctx.respond("Error removing player.")
             
-    @commands.slash_command(name='get-players', guild_ids=[GUILD_ID])
-    async def get_players(self, ctx):
-        result = self.sql.get_all_players()
-        await ctx.respond("here is the player table: " + str(result))
+    # @commands.slash_command(name='get-players', guild_ids=[GUILD_ID])
+    # async def get_players(self, ctx):
+    #     result = self.sql.get_all_players()
+    #     await ctx.respond("here is the player table: " + str(result))
     
     
         

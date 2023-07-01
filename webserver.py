@@ -54,9 +54,9 @@ class Webserver(commands.Cog):
                                                                     str(game_turn), 
                                                                     str(civ_name))
             else:
-                message = "**{}** Update! Turn {} for <@{}>".format(game_name, 
+                message = "<@{}>, Turn {} for <@{}>".format(str(discord_id[0]), 
                                                                     str(game_turn), 
-                                                                    str(discord_id[0]))
+                                                                    str(game_name))
             return message
 
             
