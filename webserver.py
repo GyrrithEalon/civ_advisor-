@@ -71,9 +71,13 @@ class Webserver(commands.Cog):
         #Browser site        
         @routes.get('/')
         async def welcome(request):
+            table = self.sql.remove_column(self.sql.get_all_games(), 0)
+            table = self.sql.char_limit(table, 0, 15)
+            table = self.sql.char_limit(table, 1, 10)
             return web.Response(text=t2a(
-                                header=["Name", "Active Player", "Turn count"],
-                                body=self.sql.remove_column(self.sql.get_all_games(), 0)
+                                header=["Name", "Player", "Turn"],
+                                body=table,
+                                column_widths=[17, 12, 6]
                                 ))
 
 

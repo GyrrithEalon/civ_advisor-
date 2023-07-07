@@ -65,9 +65,12 @@ class CommandsHandler(commands.Cog):
     @commands.slash_command(name='current_games', guild_ids=[GUILD_ID])
     async def getgames(self, ctx):
         """Get current_games"""
-        text = t2a(header=["Game", "Player", "Turn"],
-                            body=self.sql.remove_column(self.sql.get_all_games(), 0)
-                            )
+        table = self.sql.remove_column(self.sql.get_all_games(), 0)
+        table = self.sql.char_limit(table, 0, 15)
+        table = self.sql.char_limit(table, 1, 10)
+        text =  t2a(header=["Name", "Player", "Turn"],
+                    body=table,
+                    column_widths=[17, 12, 6])
         await ctx.respond(f"```\n{text}\n```")
         
     @commands.slash_command(name='purge_games_db', guild_ids=[GUILD_ID])

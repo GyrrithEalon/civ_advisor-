@@ -177,12 +177,24 @@ class SqlConnection():
             game_values.append(self.get_game(game_ids[i][0]))
         return game_values
     
-    def remove_column(self, games_table, column_num):
-        for i in range(len(games_table)):
-            games_table[i] = list(games_table[i])
-            games_table[i].pop(column_num)
-            games_table[i] = list(games_table[i])
-        return games_table
+# =============================================================================
+#Table handler functionds
+# =============================================================================
+    
+    def remove_column(self, table, column_num):
+        for i in range(len(table)):
+            table[i] = list(table[i])
+            table[i].pop(column_num)
+            table[i] = list(table[i])
+        return table
+    
+    def char_limit(self, table, column_num, char_limit):
+        for i in range(len(table)):
+            table[i] = list(table[i])
+            table[i][column_num] = str(table[i][column_num])[0:char_limit]
+            table[i] = list(table[i])
+        return table
+    
     
     def run_test(self):
         return None
