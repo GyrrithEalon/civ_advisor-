@@ -7,6 +7,7 @@ Created on Mon Apr 10 14:10:43 2023
 
 import os
 from discord.ext import commands
+from discord.commands import Option
 from dotenv import load_dotenv
 import random
 from sqlhandler import SqlConnection
@@ -73,7 +74,7 @@ class CommandsHandler(commands.Cog):
     #     await ctx.respond("Why, you are <@" + str(discord_id) + "> of course.")
         
     @commands.slash_command(name='current_games', guild_ids=[GUILD_ID])
-    async def getgames(self, ctx):
+    async def current_games(self, ctx):
         """Get current_games"""
         table = self.sql.remove_column(self.sql.get_all_games(), 0)
         table = self.sql.char_limit(table, 0, 15)
@@ -101,38 +102,75 @@ class CommandsHandler(commands.Cog):
         
     @commands.slash_command(name='fresh_water', guild_ids=[GUILD_ID])
     async def fresh_water(self, ctx):
-        """Link to ear score table"""
+        """Fresh water, AM I RIGHT"""
         await ctx.respond("Access to water is overrated")    
 
     @commands.slash_command(name='game_note', guild_ids=[GUILD_ID])
-    async def set_game_note(self, ctx, game_name: str , game_note: str , delete_note: str):
-        """Link to ear score table"""
+    async def set_game_note(self, ctx, game_name: str , game_note: str , 
+                            overwrite_flag: Option(
+                                str, 
+                                description="Enter Yes to allow overwrite",
+                                required=False,
+                                default=""),
+                            delete_note: Option(
+                                str, 
+                                description="Enter Yes to remove note",
+                                required=False,
+                                default="")):
+        """Update the notes info for an active game"""
         
         #find the game ID
         game_id = self.game_match(game_name)
+        
         if game_id is None:
             table = self.sql.get_all_games()
-            table = self.sql.remove_column(self.sql.get_all_games(), 4)
-            table = self.sql.remove_column(self.sql.get_all_games(), 3)
-            table = self.sql.remove_column(self.sql.get_all_games(), 2)
-            table = self.sql.remove_column(self.sql.get_all_games(), 1)
+            table = self.sql.remove_column(table, 3)
+            table = self.sql.remove_column(table, 2)
+            table = self.sql.remove_column(table, 0)
             text =  t2a(header=["Game Names"],
                         body=table)
-            await ctx.respond(f"I could not find that game name, pick one of these names\n\n```\n{text}\n```")
-            return
+            message = f"I could not find that game name, pick one of these names\n\n```\n{text}\n```"
+            
         else:
             old_note = self.sql.get_game_note(game_id)
             if old_note is None:
                 self.sql.insert_game_note(game_id, game_note)
-                await ctx.respond(f"I added your note to {game_name}")
+                message = f"I added your note to {game_name}"
                 
-            elif delete_note == "Y":
+                
+            elif delete_note == "Yes" and overwrite_flag == "Yes":
                 self.sql.remove_game_note(game_id)
-                await ctx.respond(f"I removed the note from {game_name}")
-            else:
+                message = f"I removed the note from {game_name}"
+                
+            elif overwrite_flag == "Yes":
                 old_note = self.sql.get_game_note(game_id)
+                old_note = old_note[0]
                 self.sql.update_game_note(game_id, game_note)
-                await ctx.respond(f"The old note ({old_note}) has been replaced with ({game_note})")
+                message = f"The old note ({old_note}) has been replaced with ({game_note})"
+            else:
+                message = "If you want to make changes, try again and enter Yes in the overwrite_flag field"
+                
+        await ctx.respond(message) 
+
+    @commands.slash_command(name='get_game_notes', guild_ids=[GUILD_ID])
+    async def get_game_notes(self, ctx):
+        """Update the notes info for an active game. """
+        
+        #find the game ID
+        notes_table = self.sql.get_all_game_notes()
+        cleaned_table = []
+        for row in notes_table:
+            game_record = self.sql.get_game(row[0])
+            name = list(game_record).pop(1)
+            cleaned_table.append([name,row[1]])
+        
+    
+        text =  t2a(header=["Game Names", "Note"],
+                    body=cleaned_table)
+        message = f"```\n{text}\n```"
+                
+        await ctx.respond(message) 
+                
                     
   
 # =============================================================================

@@ -35,7 +35,7 @@ class Webserver(commands.Cog):
 # =============================================================================
 
         
-        def game_match(self, game_name):    
+        def game_match(self, game_name, civ_name, game_turn):    
             #preform the fuzzy match for game based on the three values civ gives us
             #If the name is unuque or does not exsist, it's a quick match
             game_id = self.sql.get_games_by_name(game_name)
@@ -46,7 +46,7 @@ class Webserver(commands.Cog):
             else:
                 return False
             
-        def ping_gen(self, game_name, civ_name, game_turn):        
+        def ping_gen(self, game_name, civ_name, game_turn, game_note = None):        
         # Generate ping
             discord_id = self.sql.get_discord_id(civ_name)
             if discord_id == None:
@@ -57,6 +57,9 @@ class Webserver(commands.Cog):
                 message = "<@{}>, Turn {} for {}".format(str(discord_id[0]), 
                                                                     str(game_turn), 
                                                                     str(game_name))
+            if game_note is not None:
+                message = "{}\nGame Note: {}".format(message,game_note[0])
+                
             return message
 
             
@@ -110,11 +113,12 @@ class Webserver(commands.Cog):
             else:
                 #Check for redundace ping
                 game_data = self.sql.get_game(checked_id)
+                game_note = self.sql.get_game_note(checked_id)
                 if game_data == (checked_id ,game_name, civ_name, int(game_turn)):
                     return 200
                 else:
                     self.sql.update_game(checked_id, game_name, civ_name, game_turn)
-                    message = ping_gen(self, game_name, civ_name, game_turn)
+                    message = ping_gen(self, game_name, civ_name, game_turn, game_note)
                     await self.channel.send(message)
                     return 200
 

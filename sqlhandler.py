@@ -225,6 +225,12 @@ class SqlConnection():
         cur.close()
         return res    
     
+    def get_all_game_notes(self):
+        cur = self.con.cursor()
+        res = cur.execute("SELECT * FROM game_note")
+        res = res.fetchall()
+        cur.close()
+        return res
     
 # =============================================================================
 #Table handler functionds
