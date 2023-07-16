@@ -9,3 +9,8 @@ CREATE TABLE IF NOT EXISTS games (
     civ_name VARCHAR(50) NOT NULL,
     turn_number INTEGER NOT NULL
     );
+
+CREATE TABLE IF NOT EXISTS game_note (
+    game_id INTEGER UNIQUE,
+    note VARCHAR(25) PRIMARY KEY 
+    );

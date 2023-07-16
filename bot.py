@@ -39,7 +39,17 @@ class CommandsHandler(commands.Cog):
             f'{self.bot.user.name} is connected to the following guild:\n'
             f'{self.guild.name}(id: {self.guild.id})'
         )
-      
+    
+    def game_match(self, game_name):    
+        #preform the fuzzy match for game based on the three values civ gives us
+        #If the name is unuque or does not exsist, it's a quick match
+        game_id = self.sql.get_games_by_name(game_name)
+        if len(game_id) == 1:
+            return game_id[0][0]
+        elif len(game_id) == 0:
+            return None
+        else:
+            return False
         
 
 # =============================================================================
@@ -82,7 +92,49 @@ class CommandsHandler(commands.Cog):
         else:
             self.sql.truncate_table("games")
             await ctx.respond("Games Table Truncated")
+            
+    @commands.slash_command(name='era_score', guild_ids=[GUILD_ID])
+    async def era_score(self, ctx):
+        """Link to ear score table"""
+        await ctx.respond("[Ways to get era Score](https://docs.google.com/spreadsheets/d/1bcghYw_lk2vbBHdQV4T73C-gUWV5bq_McQjMGeoWN38/edit#gid=1645377719)")
         
+        
+    @commands.slash_command(name='fresh_water', guild_ids=[GUILD_ID])
+    async def fresh_water(self, ctx):
+        """Link to ear score table"""
+        await ctx.respond("Access to water is overrated")    
+
+    @commands.slash_command(name='game_note', guild_ids=[GUILD_ID])
+    async def set_game_note(self, ctx, game_name: str , game_note: str , delete_note: str):
+        """Link to ear score table"""
+        
+        #find the game ID
+        game_id = self.game_match(game_name)
+        if game_id is None:
+            table = self.sql.get_all_games()
+            table = self.sql.remove_column(self.sql.get_all_games(), 4)
+            table = self.sql.remove_column(self.sql.get_all_games(), 3)
+            table = self.sql.remove_column(self.sql.get_all_games(), 2)
+            table = self.sql.remove_column(self.sql.get_all_games(), 1)
+            text =  t2a(header=["Game Names"],
+                        body=table)
+            await ctx.respond(f"I could not find that game name, pick one of these names\n\n```\n{text}\n```")
+            return
+        else:
+            old_note = self.sql.get_game_note(game_id)
+            if old_note is None:
+                self.sql.insert_game_note(game_id, game_note)
+                await ctx.respond(f"I added your note to {game_name}")
+                
+            elif delete_note == "Y":
+                self.sql.remove_game_note(game_id)
+                await ctx.respond(f"I removed the note from {game_name}")
+            else:
+                old_note = self.sql.get_game_note(game_id)
+                self.sql.update_game_note(game_id, game_note)
+                await ctx.respond(f"The old note ({old_note}) has been replaced with ({game_note})")
+                    
+  
 # =============================================================================
 # Name Regestry Commands
 # =============================================================================

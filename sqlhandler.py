@@ -176,6 +176,55 @@ class SqlConnection():
         for i in range(0,len(game_ids)):
             game_values.append(self.get_game(game_ids[i][0]))
         return game_values
+
+
+
+# =============================================================================
+#     Interate with the Game's note table
+# =============================================================================
+    def insert_game_note(self, game_id, game_note):
+        cur = self.con.cursor()
+        try:
+            cur.execute('INSERT INTO game_note VALUES(? , ?)',
+                        (game_id, game_note))
+            self.con.commit()
+            cur.close()
+            return True
+        except:
+             cur.close()
+             return False
+    
+    def update_game_note(self, game_id, game_note):
+        cur = self.con.cursor()
+        try:
+            cur.execute('UPDATE game_note SET note = ? WHERE game_id = ?',
+                        (game_note, str(game_id)))
+            self.con.commit()
+            cur.close()
+            return True
+        except:
+            cur.close()
+            return False
+        
+    def remove_game_note(self, game_id):
+        cur = self.con.cursor()
+        try:
+            cur.execute('DELETE FROM game_note WHERE game_id = ?', 
+                        (str(game_id),))
+            self.con.commit()
+            cur.close()
+            return True
+        except:
+            cur.close()
+            return False
+    
+    def get_game_note(self, game_id):
+        cur = self.con.cursor()
+        res = cur.execute("SELECT note FROM game_note WHERE game_id = ?",(str(game_id),))
+        res = res.fetchone()
+        cur.close()
+        return res    
+    
     
 # =============================================================================
 #Table handler functionds
