@@ -17,7 +17,7 @@ class func():
         self.sql = SqlConnection(CIV_GAME_DB)
         return
     
-    def game_match(self, game_name, civ_name, game_turn):    
+    def game_match(self, game_name, civ_name=None, game_turn=None):    
         #preform the fuzzy match for game based on the three values civ gives us
         #If the name is unuque or does not exsist, it's a quick match
         game_id = self.sql.get_games_by_name(game_name)
