@@ -7,9 +7,13 @@ Created on Sun Jun  4 21:20:56 2023
 from aiohttp import web
 from discord.ext import commands, tasks
 import os
-from datetime import datetime
 from sqlhandler import SqlConnection
+import json
 from table2ascii import table2ascii as t2a, PresetStyle
+import datetime
+from fuc import func
+
+
 
 app = web.Application()
 routes = web.RouteTableDef()
@@ -30,39 +34,12 @@ class Webserver(commands.Cog):
         print(
             f'{self.channel.name}(id: {self.channel.id})'
         )
+        
+        
 # =============================================================================
 #         Game Matching processing
 # =============================================================================
 
-        
-        def game_match(self, game_name, civ_name, game_turn):    
-            #preform the fuzzy match for game based on the three values civ gives us
-            #If the name is unuque or does not exsist, it's a quick match
-            game_id = self.sql.get_games_by_name(game_name)
-            if len(game_id) == 1:
-                return game_id[0][0]
-            elif len(game_id) == 0:
-                return None
-            else:
-                return False
-            
-        def ping_gen(self, game_name, civ_name, game_turn, game_note = None):        
-        # Generate ping
-            discord_id = self.sql.get_discord_id(civ_name)
-            if discord_id == None:
-                message = "**{}** Update! Turn {} for {}".format(game_name, 
-                                                                    str(game_turn), 
-                                                                    str(civ_name))
-            else:
-                message = "<@{}>, Turn {} for {}".format(str(discord_id[0]), 
-                                                                    str(game_turn), 
-                                                                    str(game_name))
-            if game_note is not None:
-                message = "{}\nGame Note: {}".format(message,game_note[0])
-                
-            return message
-
-            
                 
         # def make_game_table(self, game_ids):
         #     for i in range(0,len(game_id)):
@@ -75,13 +52,22 @@ class Webserver(commands.Cog):
         @routes.get('/')
         async def welcome(request):
             table = self.sql.remove_column(self.sql.get_all_games(), 0)
-            table = self.sql.char_limit(table, 0, 15)
-            table = self.sql.char_limit(table, 1, 10)
-            return web.Response(text=t2a(
-                                header=["Name", "Player", "Turn"],
-                                body=table,
-                                column_widths=[17, 12, 6]
-                                ))
+            for row in table:
+                row[3] = func.age_formater(self, row[3])
+                
+            
+            players = self.sql.remove_column(self.sql.get_all_players(), 0)
+            
+            webtext = t2a(header=["Name", "Player", "Turn", "Age"], body=table) + \
+                        "\n\n" + t2a(header=["ID", "Civ_Name"], body=players)
+            
+            
+            try:
+                return web.Response(text=webtext)
+            except Exception as error:
+                # handle the exception
+                print("An exception occurred:", type(error).__name__)
+                return web.Response(text="An exception occurred:" + type(error).__name__)
 
 
 
@@ -96,29 +82,32 @@ class Webserver(commands.Cog):
             game_name = data['value1']
             civ_name = data['value2']
             game_turn = data['value3']
-
+    
+    
             #log json for testing
             now = datetime.now()
             with open("data/" + now.strftime("%Y-%m-%d_%H-%M-%S") + '.json', 'w') as file:
-                file.write(str(data))
+                json.dump(data, file)
                 
             # Check for redundant
-            checked_id = game_match(self, game_name, civ_name, game_turn)
+            checked_id = func.game_match(self, game_name, civ_name, game_turn)
             if checked_id == None:
-                self.sql.insert_game(game_name, civ_name, game_turn)
-                message = ping_gen(self, game_name, civ_name, game_turn)
+                self.sql.insert_game(game_name, civ_name, game_turn, now)
+                message = func.ping_gen(self, game_name, civ_name, game_turn)
                 await self.channel.send(message)
             elif checked_id == False:
                 return 200
             else:
                 #Check for redundace ping
                 game_data = self.sql.get_game(checked_id)
+                game_data = list(game_data)
+                game_data[4] = None
                 game_note = self.sql.get_game_note(checked_id)
-                if game_data == (checked_id ,game_name, civ_name, int(game_turn)):
+                if game_data == [checked_id, game_name, civ_name, int(game_turn), None]:
                     return 200
                 else:
-                    self.sql.update_game(checked_id, game_name, civ_name, game_turn)
-                    message = ping_gen(self, game_name, civ_name, game_turn, game_note)
+                    self.sql.update_game(checked_id, game_name, civ_name, game_turn, now)
+                    message = func.ping_gen(self, game_name, civ_name, game_turn, game_note)
                     await self.channel.send(message)
                     return 200
 

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS games (
     game_id INTEGER PRIMARY KEY AUTOINCREMENT,
     game_name VARCHAR(150) NOT NULL, 
     civ_name VARCHAR(50) NOT NULL,
-    turn_number INTEGER NOT NULL
+    turn_number INTEGER NOT NULL,
+    last_update TIMESTAMP
     );
 
 CREATE TABLE IF NOT EXISTS game_note (

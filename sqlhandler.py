@@ -82,7 +82,8 @@ class SqlConnection():
     def remove_player(self, discord_id):
         cur = self.con.cursor()
         try:
-            cur.execute('DELETE FROM players WHERE discord_id = ?', (discord_id,))
+            cur.execute('DELETE FROM players WHERE discord_id = ?',
+                        (discord_id,))
             self.con.commit()
             cur.close()
             return True
@@ -92,14 +93,16 @@ class SqlConnection():
     
     def get_discord_id(self, civ_name):
         cur = self.con.cursor()
-        res = cur.execute("SELECT * FROM players WHERE civ_name = ?",(civ_name,))
+        res = cur.execute("SELECT * FROM players WHERE civ_name = ?",
+                          (civ_name,))
         res = res.fetchone()
         cur.close()
         return res
     
     def get_civ_name(self, discord_id):
         cur = self.con.cursor()
-        res = cur.execute("SELECT * FROM players WHERE discord_id = ?",(discord_id,))
+        res = cur.execute("SELECT * FROM players WHERE discord_id = ?",
+                          (discord_id,))
         res = res.fetchone()
         cur.close()
         return res
@@ -114,11 +117,11 @@ class SqlConnection():
 # =============================================================================
 #     Interate with the Game Table
 # =============================================================================
-    def insert_game(self, game_name, civ_name, turn_number):
+    def insert_game(self, game_name, civ_name, turn_number, last_update):
         cur = self.con.cursor()
     # try:
-        cur.execute('INSERT INTO games VALUES(NULL, ? , ? , ?)',
-                    (game_name, civ_name, turn_number))
+        cur.execute('INSERT INTO games VALUES(NULL, ? , ? , ?, ?)',
+                    (game_name, civ_name, turn_number, last_update))
         self.con.commit()
         cur.close()
         return True
@@ -126,11 +129,11 @@ class SqlConnection():
     #     cur.close()
     #     return False
     
-    def update_game(self, game_id, game_name, civ_name, turn_number):
+    def update_game(self, game_id, game_name, civ_name, turn_number, last_update):
         cur = self.con.cursor()
         try:
-            cur.execute('UPDATE games SET civ_name = ?, turn_number = ?, game_name = ? WHERE game_id = ?',
-                        (civ_name, turn_number, game_name, game_id))
+            cur.execute('UPDATE games SET civ_name = ?, turn_number = ?, game_name = ?, last_update = ? WHERE game_id = ?',
+                        (civ_name, turn_number, game_name, last_update, game_id))
             self.con.commit()
             cur.close()
             return True
@@ -152,14 +155,16 @@ class SqlConnection():
     
     def get_game(self, game_id):
         cur = self.con.cursor()
-        res = cur.execute("SELECT * FROM games WHERE game_id = ?",(str(game_id),))
+        res = cur.execute("SELECT * FROM games WHERE game_id = ?",
+                          (str(game_id),))
         res = res.fetchone()
         cur.close()
         return res
     
     def get_games_by_name(self, game_name):
         cur = self.con.cursor()
-        res = cur.execute("SELECT game_id FROM games WHERE game_name = ?",(str(game_name),))
+        res = cur.execute("SELECT game_id FROM games WHERE game_name = ?",
+                          (str(game_name),))
         res = res.fetchall()
         cur.close()
         return res
@@ -220,7 +225,8 @@ class SqlConnection():
     
     def get_game_note(self, game_id):
         cur = self.con.cursor()
-        res = cur.execute("SELECT note FROM game_note WHERE game_id = ?",(str(game_id),))
+        res = cur.execute("SELECT note FROM game_note WHERE game_id = ?",
+                          (str(game_id),))
         res = res.fetchone()
         cur.close()
         return res    

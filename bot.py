@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import random
 from sqlhandler import SqlConnection
 from table2ascii import table2ascii as t2a, PresetStyle
+from fuc import func
 
 # =============================================================================
 # Load Env
@@ -29,6 +30,7 @@ class CommandsHandler(commands.Cog):
     
     def __init__(self, bot, CIV_GAME_DB):
        self.bot = bot
+       self.func = func()
        self.sql = SqlConnection(CIV_GAME_DB)
 
        
@@ -40,17 +42,6 @@ class CommandsHandler(commands.Cog):
             f'{self.bot.user.name} is connected to the following guild:\n'
             f'{self.guild.name}(id: {self.guild.id})'
         )
-    
-    def game_match(self, game_name):    
-        #preform the fuzzy match for game based on the three values civ gives us
-        #If the name is unuque or does not exsist, it's a quick match
-        game_id = self.sql.get_games_by_name(game_name)
-        if len(game_id) == 1:
-            return game_id[0][0]
-        elif len(game_id) == 0:
-            return None
-        else:
-            return False
         
 
 # =============================================================================
@@ -66,33 +57,19 @@ class CommandsHandler(commands.Cog):
         response = '\"scout, scout, slinger, settler\", ' + random.choice(great_people)
         await ctx.respond(response)
         
-    # @commands.slash_command(name='whoami', guild_ids=[GUILD_ID])
-    # async def whoami(self, ctx):
-    #     """Ping tester"""
-    #     discord_id = ctx.author.id
-    #     print(ctx.channel.id)
-    #     await ctx.respond("Why, you are <@" + str(discord_id) + "> of course.")
-        
     @commands.slash_command(name='current_games', guild_ids=[GUILD_ID])
     async def current_games(self, ctx):
         """Get current_games"""
         table = self.sql.remove_column(self.sql.get_all_games(), 0)
         table = self.sql.char_limit(table, 0, 15)
         table = self.sql.char_limit(table, 1, 10)
-        text =  t2a(header=["Name", "Player", "Turn"],
-                    body=table,
-                    column_widths=[17, 12, 6])
-        await ctx.respond(f"```\n{text}\n```")
+        for row in table:
+            row[3] = self.func.age_formater(row[3])
         
-    @commands.slash_command(name='purge_games_db', guild_ids=[GUILD_ID])
-    async def purge_table(self, ctx):
-        """Purge the games table"""
-        discord_id = ctx.author.id
-        if str(discord_id) != str(EALON_ID):
-            await ctx.respond("Only <@" + str(EALON_ID) + "> can run that commnand.")
-        else:
-            self.sql.truncate_table("games")
-            await ctx.respond("Games Table Truncated")
+        text =  t2a(header=["Name", "Player", "Turn", "Age"],
+                    body=table,
+                    column_widths=[17, 12, 6, 5])
+        await ctx.respond(f"```\n{text}\n```")
             
     @commands.slash_command(name='era_score', guild_ids=[GUILD_ID])
     async def era_score(self, ctx):
@@ -120,35 +97,33 @@ class CommandsHandler(commands.Cog):
         """Update the notes info for an active game"""
         
         #find the game ID
-        game_id = self.game_match(game_name)
+        game_id = self.func.game_match(game_name)
         
         if game_id is None:
             table = self.sql.get_all_games()
-            table = self.sql.remove_column(table, 3)
-            table = self.sql.remove_column(table, 2)
-            table = self.sql.remove_column(table, 0)
+            table = list(table).pop(1)
             text =  t2a(header=["Game Names"],
                         body=table)
-            message = f"I could not find that game name, pick one of these names\n\n```\n{text}\n```"
+            message = f"I could not find that name from my list, pick one of these names.\n```\n{text}\n```"
             
         else:
             old_note = self.sql.get_game_note(game_id)
             if old_note is None:
                 self.sql.insert_game_note(game_id, game_note)
-                message = f"I added your note to {game_name}"
+                message = f"I have added your note to **{game_name}**"
                 
                 
             elif delete_note == "Yes" and overwrite_flag == "Yes":
                 self.sql.remove_game_note(game_id)
-                message = f"I removed the note from {game_name}"
+                message = f"I have removed the note from **{game_name}**"
                 
             elif overwrite_flag == "Yes":
                 old_note = self.sql.get_game_note(game_id)
                 old_note = old_note[0]
                 self.sql.update_game_note(game_id, game_note)
-                message = f"The old note ({old_note}) has been replaced with ({game_note})"
+                message = f"I have replace the old note ***{old_note}*** with your new note, ***{game_note}***"
             else:
-                message = "If you want to make changes, try again and enter Yes in the overwrite_flag field"
+                message = "If you want to make changes, I need you to enter **Yes** overwrite_flag field"
                 
         await ctx.respond(message) 
 
@@ -207,7 +182,56 @@ class CommandsHandler(commands.Cog):
     #     result = self.sql.get_all_players()
     #     await ctx.respond("here is the player table: " + str(result))
     
+# =============================================================================
+#     Admin Section
+# =============================================================================
     
         
+    @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
+    async def purge_table(self, ctx, cmd: str , 
+                           option1: Option(
+                               str,
+                               required=False,
+                               default=""),
+                           option2: Option(
+                               str, 
+                               required=False,
+                               default="")):
+        discord_id = ctx.author.id
+        if str(discord_id) != str(EALON_ID):
+            await ctx.respond("Only <@" + str(EALON_ID) + "> can run that commnand.")
+            return
+           
+        if cmd == "purge_db":
+            """Purge a table"""
+            try:
+                self.sql.truncate_table(option1)
+                await ctx.respond("Truncate Table " + option1) 
+            except:
+                await ctx.respond("FAILED to Truncate Table " + option1) 
+        elif cmd == "drop_db":
+            """drop a table"""
+            self.sql.drop_table(option1)
+            try:
+                await ctx.respond("Dropped Table " + option1)
+            except:
+                await ctx.respond("FAILED to Drop Table " + option1) 
+                
+        elif cmd == "verify_db":
+           """remake tables"""
+           self.verify_db()
+           await ctx.respond("verify function run") 
 
+        elif cmd == "get_players":
+           """get players"""
+           result = self.sql.get_all_players()
+           await ctx.respond("here is the player table: \n" + str(result))
+           
+        elif cmd == "get_tables":
+           """get tables"""
+           result = self.sql.get_all_tables()
+           await ctx.respond("here is the tables: \n" + str(result))
+        
+        else:
+            await ctx.respond("invaild command")
     
