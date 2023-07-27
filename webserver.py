@@ -85,7 +85,7 @@ class Webserver(commands.Cog):
     
     
             #log json for testing
-            now = datetime.now()
+            now = datetime.datetime.now()
             with open("data/" + now.strftime("%Y-%m-%d_%H-%M-%S") + '.json', 'w') as file:
                 json.dump(data, file)
                 
