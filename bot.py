@@ -211,8 +211,8 @@ class CommandsHandler(commands.Cog):
                 await ctx.respond("FAILED to Truncate Table " + option1) 
         elif cmd == "drop_db":
             """drop a table"""
-            self.sql.drop_table(option1)
             try:
+                self.sql.drop_table(option1)
                 await ctx.respond("Dropped Table " + option1)
             except:
                 await ctx.respond("FAILED to Drop Table " + option1) 
@@ -231,6 +231,28 @@ class CommandsHandler(commands.Cog):
            """get tables"""
            result = self.sql.get_all_tables()
            await ctx.respond("here is the tables: \n" + str(result))
+           
+        elif cmd == "get_notes":
+           """get tables"""
+           try:
+               data = self.sql.get_all_game_notes()
+               await ctx.respond(str(data))
+           except:
+                await ctx.respond("FAILED to get ")
+        elif cmd == "get_games":
+           """get tables"""
+           try:
+               data = self.sql.get_all_games()
+               await ctx.respond(str(data))
+           except:
+                await ctx.respond("FAILED to get games")
+        elif cmd == "get_players":
+           """get tables"""
+           try:
+               data = self.sql.get_all_players()
+               await ctx.respond(str(data))
+           except:
+                await ctx.respond("FAILED to get Players")
         
         else:
             await ctx.respond("invaild command")
