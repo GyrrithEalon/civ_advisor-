@@ -184,8 +184,7 @@ class CommandsHandler(commands.Cog):
     
 # =============================================================================
 #     Admin Section
-# =============================================================================
-    
+# =============================================================================    
         
     @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
     async def purge_table(self, ctx, cmd: str , 
@@ -216,6 +215,22 @@ class CommandsHandler(commands.Cog):
                 await ctx.respond("Dropped Table " + option1)
             except:
                 await ctx.respond("FAILED to Drop Table " + option1) 
+
+        elif cmd == "remove_game":
+            """remove a game"""
+            try:
+                self.sql.remove_game(option1)
+                await ctx.respond("Removed Game " + option1)
+            except:
+                await ctx.respond("FAILED to Remove Game " + option1) 
+        
+        elif cmd == "remove_note":
+            """remove a game"""
+            try:
+                self.sql.remove_game_note(option1)
+                await ctx.respond("Removed note for Game " + option1)
+            except:
+                await ctx.respond("FAILED to Remove Note Game " + option1) 
                 
         elif cmd == "verify_db":
            """remake tables"""
