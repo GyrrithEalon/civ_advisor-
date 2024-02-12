@@ -59,7 +59,7 @@ class Webserver(commands.Cog):
             players = self.sql.remove_column(self.sql.get_all_players(), 0)
             
             webtext = t2a(header=["Name", "Player", "Turn", "Age"], body=table) + \
-                        "\n\n" + t2a(header=["ID", "Civ_Name"], body=players)
+                        "\n\n" + t2a(header=["Civ_Name"], body=players)
             
             
             try:
