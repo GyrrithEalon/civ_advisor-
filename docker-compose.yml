@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  civbot:
+    image: civbot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 3730:3730

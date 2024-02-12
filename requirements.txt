@@ -1,0 +1,87 @@
+aiohttp==3.8.4
+aiosignal==1.3.1
+asttokens==2.4.1
+async-timeout==4.0.2
+attrs==22.2.0
+backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
+bitarray==2.7.3
+Bottleneck @ file:///C:/Windows/Temp/abs_3198ca53-903d-42fd-87b4-03e6d03a8381yfwsuve8/croots/recipe/bottleneck_1657175565403/work
+brotlipy==0.7.0
+certifi @ file:///C:/b/abs_91u83siphd/croot/certifi_1700501720658/work/certifi
+cffi @ file:///C:/b/abs_49n3v2hyhr/croot/cffi_1670423218144/work
+chardet @ file:///C:/ci_310/chardet_1642114080098/work
+charset-normalizer==3.1.0
+click @ file:///C:/ci/click_1646056762388/work
+cloudpickle @ file:///tmp/build/80754af9/cloudpickle_1632508026186/work
+colorama==0.4.6
+comm==0.2.1
+cryptography==40.0.2
+debugpy==1.8.0
+decorator==5.1.1
+entrypoints @ file:///C:/ci/entrypoints_1649926676279/work
+exceptiongroup==1.2.0
+executing==2.0.1
+ffmpeg-python==0.2.0
+Flask @ file:///C:/b/abs_ef16l83sif/croot/flask_1671217367534/work
+frozenlist==1.3.3
+future==0.18.3
+greenlet @ file:///C:/b/abs_a6c75ie0bc/croot/greenlet_1702060012174/work
+idna @ file:///C:/b/abs_bdhbebrioa/croot/idna_1666125572046/work
+imageio-ffmpeg==0.4.8
+ipykernel==6.29.0
+ipython==8.21.0
+itsdangerous @ file:///tmp/build/80754af9/itsdangerous_1621432558163/work
+jedi==0.19.1
+Jinja2 @ file:///C:/b/abs_7cdis66kl9/croot/jinja2_1666908141852/work
+jupyter_client==8.6.0
+jupyter_core==5.7.1
+MarkupSafe @ file:///C:/ci/markupsafe_1654508036328/work
+matplotlib-inline==0.1.6
+mkl-fft==1.3.1
+mkl-random @ file:///C:/ci_310/mkl_random_1643050563308/work
+mkl-service==2.4.0
+multidict==6.0.4
+nest-asyncio==1.6.0
+numexpr @ file:///C:/b/abs_a7kbak88hk/croot/numexpr_1668713882979/work
+numpy @ file:///C:/b/abs_datssh7cer/croot/numpy_and_numpy_base_1672336199388/work
+packaging==23.2
+pandas @ file:///C:/b/abs_c6fuezktfm/croot/pandas_1670425103552/work
+parso==0.8.3
+pdfminer==20191125
+pdfminer.six==20221105
+pdfreader==0.1.12
+pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
+Pillow==9.5.0
+platformdirs==4.2.0
+prompt-toolkit==3.0.43
+psutil==5.9.8
+psycopg2 @ file:///C:/b/abs_4aotb39ojr/croot/psycopg2_1704232487763/work
+pure-eval==0.2.2
+py-cord==2.4.1
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pycryptodome==3.17
+pyflakes==3.0.1
+Pygments==2.17.2
+pyOpenSSL @ file:///C:/b/abs_552w85x1jz/croot/pyopenssl_1677607703691/work
+PyPDF2 @ file:///C:/b/abs_09r7uvihrc/croots/recipe/pypdf2_1662469711628/work
+PySocks @ file:///C:/ci_310/pysocks_1642089375450/work
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+python-dotenv==1.0.0
+pytz @ file:///C:/b/abs_22fofvpn1x/croot/pytz_1671698059864/work
+pywin32==306
+pyzmq==25.1.2
+requests @ file:///C:/b/abs_41owkd5ymz/croot/requests_1682607524657/work
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+spyder-kernels @ file:///C:/b/abs_feh4xo1mrn/croot/spyder-kernels_1673292245176/work
+SQLAlchemy @ file:///C:/b/abs_876dxwqqu8/croot/sqlalchemy_1705089154696/work
+stack-data==0.6.3
+table2ascii==1.1.1
+tornado==6.4
+traitlets==5.14.1
+typing_extensions @ file:///C:/b/abs_72cdotwc_6/croot/typing_extensions_1705599364138/work
+urllib3 @ file:///C:/b/abs_3ce53vrdcr/croot/urllib3_1680254693505/work
+wcwidth==0.2.13
+Werkzeug @ file:///C:/b/abs_8578rs2ra_/croot/werkzeug_1679489759009/work
+win-inet-pton @ file:///C:/ci_310/win_inet_pton_1642658466512/work
+wincertstore==0.2
+yarl==1.8.2
