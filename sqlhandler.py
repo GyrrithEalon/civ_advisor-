@@ -21,7 +21,7 @@ class SqlConnection():
               
     def verify_tables(self):
         cur = self.con.cursor()
-        with open("sql/table_maker.sql", "r") as sql_file:
+        with open("sql/table_maker.sql","r") as sql_file:
             sql_script = sql_file.read()
             cur.executescript(sql_script)
         self.tables = self.get_all_tables()
@@ -39,15 +39,15 @@ class SqlConnection():
         
     def drop_table(self, table):
         cur = self.con.cursor()
-        cur.execute('DROP TABLE "{}" '.format(table.replace('"', '""')))
+        cur.execute('DROP TABLE "{}" '.format(table.replace('"','""')))
         self.con.commit()
         cur.close()
         return 
     
     def truncate_table(self, table):
         cur = self.con.cursor()
-        print('TRUNCATE TABLE "{}" '.format(table.replace('"', '""')))
-        cur.execute('DELETE FROM "{}" '.format(table.replace('"', '""')))
+        print('TRUNCATE TABLE "{}" '.format(table.replace('"','""')))
+        cur.execute('DELETE FROM "{}" '.format(table.replace('"','""')))
         self.con.commit()
         cur.close()
         return 

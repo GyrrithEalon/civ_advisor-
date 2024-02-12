@@ -66,7 +66,7 @@ class CommandsHandler(commands.Cog):
         for row in table:
             row[3] = self.func.age_formater(row[3])
         
-        text =  t2a(header=["Name", "Player", "Turn", "Age"],
+        text =  t2a(header=["Name","Player","Turn","Age"],
                     body=table,
                     column_widths=[17, 12, 6, 5])
         await ctx.respond(f"```\n{text}\n```")
@@ -140,7 +140,7 @@ class CommandsHandler(commands.Cog):
             cleaned_table.append([name,row[1]])
         
     
-        text =  t2a(header=["Game Names", "Note"],
+        text =  t2a(header=["Game Names","Note"],
                     body=cleaned_table)
         message = f"```\n{text}\n```"
                 
