@@ -85,14 +85,13 @@ class Webserver(commands.Cog):
     
             if game_name == "GENERATEPING":
                 games = self.sql.get_all_games()
-                message = "Daily Game Check"
-                await self.channel.send(message)
+                message = "Daily Game Check\n"
                 for game in games:
                     age = func.age_formater(self, game[4])
                     if 'd' in age:
                         if int(age[:-1]) > 2:
-                            message = func.ping_gen(self, game[1], game[2], game[3])
-                            await self.channel.send(message)
+                            message = message + func.ping_gen(self, game[1], game[2], game[3]) + "\n"
+                await self.channel.send(message)
                 return 200
 
 
