@@ -73,13 +73,13 @@ class CommandsHandler(commands.Cog):
             
     @commands.slash_command(name='era_score', guild_ids=[GUILD_ID])
     async def era_score(self, ctx):
-        """Link to ear score table"""
+        """Link to era score table"""
         await ctx.respond("[Ways to get era Score](https://docs.google.com/spreadsheets/d/1bcghYw_lk2vbBHdQV4T73C-gUWV5bq_McQjMGeoWN38/edit#gid=1645377719)")
         
         
     @commands.slash_command(name='fresh_water', guild_ids=[GUILD_ID])
     async def fresh_water(self, ctx):
-        """Fresh water, AM I RIGHT"""
+        """It's Over rated"""
         await ctx.respond("Access to water is overrated")    
 
     @commands.slash_command(name='game_note', guild_ids=[GUILD_ID])
