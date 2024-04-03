@@ -83,7 +83,19 @@ class Webserver(commands.Cog):
             civ_name = data['value2']
             game_turn = data['value3']
     
-    
+            if game_name == "GENERATEPING":
+                games = self.sql.get_all_games()
+                message = "Daily Game Check"
+                await self.channel.send(message)
+                for game in games:
+                    age = func.age_formater(self, game[4])
+                    if 'd' in age:
+                        if int(age[:-1]) > 2:
+                            message = func.ping_gen(self, game[1], game[2], game[3])
+                            await self.channel.send(message)
+                return 200
+
+
             #log json for testing
             now = datetime.datetime.now()
             with open("data/" + now.strftime("%Y-%m-%d_%H-%M-%S") + '.json', 'w') as file:
