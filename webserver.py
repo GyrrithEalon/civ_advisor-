@@ -85,12 +85,37 @@ class Webserver(commands.Cog):
     
             if game_name == "GENERATEPING":
                 games = self.sql.get_all_games()
-                message = "Daily Game Check\n"
+                games_to_ping = []
                 for game in games:
                     age = func.age_formater(self, game[4])
                     if 'd' in age:
-                        if int(age[:-1]) > 2:
-                            message = message + func.ping_gen(self, game[1], game[2], game[3]) + "\n"
+                        if int(age[:-1]) > 1:
+                            games_to_ping.append(game)
+
+                if len(games_to_ping) == 0:
+                    return 200
+                
+                # Open the file in read mode
+                with open("expression.txt", "r") as file:
+                    lines = file.readlines()
+
+                # Read the first line and increment it
+                line_number = int(lines[0].strip()) + 1
+
+                # Read the line at the new index
+                if line_number > len(lines):
+                    line_number = 1
+
+                # Update the first line
+                lines[0] = str(line_number) + "\n"
+                # Write the new number back to the file
+                with open("expression.txt", "w") as file:
+                    file.writelines(lines)
+
+                message = lines[line_number] + "\n\n"
+
+                for game in games_to_ping:
+                    message = message + func.ping_gen(self, game[1], game[2], game[3]) + "\n"
                 await self.channel.send(message)
                 return 200
 
