@@ -185,6 +185,8 @@ class CommandsHandler(commands.Cog):
 # =============================================================================
 #     Admin Section
 # =============================================================================    
+
+
         
     @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
     async def purge_table(self, ctx, cmd: str , 

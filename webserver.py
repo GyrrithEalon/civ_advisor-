@@ -78,7 +78,19 @@ class Webserver(commands.Cog):
         #API Endpoint
         @routes.post(os.getenv('END_POINT_URL'))
         async def civ_update(request):
-            data = await request.json()
+            try:
+                data = await request.json()
+            except Exception as error:
+                # handle the exception
+                print("An exception occurred:", type(error).__name__)
+                # Write the request data to an error file
+                with open('error.log', 'a') as error_file:
+                    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    error_file.write(f"[{timestamp}] An exception occurred: {type(error).__name__}\n")
+                    error_file.write(f"[{timestamp}] Request data: {await request.text()}\n")
+                    return web.Response(status=400, text="Bad Request")
+            
+
             game_name = data['value1']
             civ_name = data['value2']
             game_turn = data['value3']
@@ -120,10 +132,7 @@ class Webserver(commands.Cog):
                 return 200
 
 
-            #log json for testing
-            now = datetime.datetime.now()
-            with open("data/" + now.strftime("%Y-%m-%d_%H-%M-%S") + '.json', 'w') as file:
-                json.dump(data, file)
+
                 
             # Check for redundant
             checked_id = func.game_match(self, game_name, civ_name, game_turn)

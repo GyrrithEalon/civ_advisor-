@@ -1,3 +1,4 @@
 py-cord
-nest_asyncio                                                                                                                                                python-dotenv
-table2ascii 
+nest_asyncio
+python-dotenv
+table2ascii
