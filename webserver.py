@@ -99,10 +99,8 @@ class Webserver(commands.Cog):
                 games = self.sql.get_all_games()
                 games_to_ping = []
                 for game in games:
-                    age = func.age_formater(self, game[4])
-                    if 'd' in age:
-                        if int(age[:-1]) > 1:
-                            games_to_ping.append(game)
+                    if func.is_game_stale(self, game[4]):
+                        games_to_ping.append(game)
 
                 if len(games_to_ping) == 0:
                     return 200

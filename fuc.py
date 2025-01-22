@@ -52,6 +52,22 @@ class func():
             #Show Days
             return str(delta.days) + "d"
         
+    def is_game_stale(self, time, stale_timer = 36):   
+        now = datetime.now()
+        stale_timer = timedelta(hours=stale_timer)
+        
+        if isinstance(time, str):
+            date_format = '%Y-%m-%d %H:%M:%S.%f'
+            time = datetime.strptime(time, date_format)
+
+        delta = now - time
+        if delta > stale_timer:
+            return True
+        else:
+            return False
+
+        
+        
     def ping_gen(self, game_name, civ_name, game_turn, game_note = None):        
     # Generate ping
         discord_id = self.sql.get_discord_id(civ_name)
