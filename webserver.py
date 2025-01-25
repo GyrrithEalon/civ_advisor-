@@ -91,6 +91,7 @@ class Webserver(commands.Cog):
                     return web.Response(status=400, text="Bad Request")
             
 
+            now = datetime.datetime.now()
             game_name = data['value1']
             civ_name = data['value2']
             game_turn = data['value3']
