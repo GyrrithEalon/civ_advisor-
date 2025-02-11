@@ -6,3 +6,4 @@ data/*
 *.json
 *.db
 *.bak
+expression.txt
