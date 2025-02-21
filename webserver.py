@@ -7,24 +7,21 @@ Created on Sun Jun  4 21:20:56 2023
 from aiohttp import web
 from discord.ext import commands, tasks
 import os
-from sqlhandler import SqlConnection
-import json
-from table2ascii import table2ascii as t2a, PresetStyle
+from table2ascii import table2ascii as t2a
 import datetime
-from fuc import func
-
+from gamedb import GameDB
+from playerdb import PlayerDB
 
 
 app = web.Application()
 routes = web.RouteTableDef()
 
 
-
-
 class Webserver(commands.Cog):
-    def __init__(self, bot, CIV_GAME_DB):
+    def __init__(self, bot, Games:GameDB, Players:PlayerDB):
         self.bot = bot       
-        self.sql = SqlConnection(CIV_GAME_DB)
+        self.games = Games
+        self.players = Players
         self.web_server.start()
 
     @commands.Cog.listener()
@@ -35,15 +32,6 @@ class Webserver(commands.Cog):
             f'{self.channel.name}(id: {self.channel.id})'
         )
         
-        
-# =============================================================================
-#         Game Matching processing
-# =============================================================================
-
-                
-        # def make_game_table(self, game_ids):
-        #     for i in range(0,len(game_id)):
-        #         game_values.append(self.sql.get_game(game_id[i][0]))
 
 # =============================================================================
 # Web server Processing
@@ -51,17 +39,7 @@ class Webserver(commands.Cog):
         #Browser site        
         @routes.get('/')
         async def welcome(request):
-            table = self.sql.remove_column(self.sql.get_all_games(), 0)
-            for row in table:
-                row[3] = func.age_formater(self, row[3])
-                
-            
-            players = self.sql.remove_column(self.sql.get_all_players(), 0)
-            
-            webtext = t2a(header=["Name", "Player", "Turn", "Age"], body=table) + \
-                        "\n\n" + t2a(header=["Civ_Name"], body=players)
-            
-            
+            webtext = str(self.games) + "\n\n" + str(self.players)
             try:
                 return web.Response(text=webtext)
             except Exception as error:
@@ -91,17 +69,12 @@ class Webserver(commands.Cog):
                     return web.Response(status=400, text="Bad Request")
             
 
-            now = datetime.datetime.now()
-            game_name = data['value1']
-            civ_name = data['value2']
-            game_turn = data['value3']
+            incoming_game_name = data['value1']
+            incoming_player_name = data['value2']
+            incoming_game_turn = data['value3']
     
-            if game_name == "GENERATEPING":
-                games = self.sql.get_all_games()
-                games_to_ping = []
-                for game in games:
-                    if func.is_game_stale(self, game[4]):
-                        games_to_ping.append(game)
+            if incoming_game_name == "GENERATEPING":
+                games_to_ping = self.games.get_stale_games()
 
                 if len(games_to_ping) == 0:
                     return 200
@@ -126,34 +99,24 @@ class Webserver(commands.Cog):
                 message = lines[line_number] + "\n\n"
 
                 for game in games_to_ping:
-                    message = message + func.ping_gen(self, game[1], game[2], game[3]) + "\n"
+                    message = message + self.games.ping_gen(game.name,self.players) + "\n"
                 await self.channel.send(message)
                 return 200
 
-
-
-                
-            # Check for redundant
-            checked_id = func.game_match(self, game_name, civ_name, game_turn)
-            if checked_id == None:
-                self.sql.insert_game(game_name, civ_name, game_turn, now)
-                message = func.ping_gen(self, game_name, civ_name, game_turn)
+            # Check for new game
+            check_game = self.games.get_game(incoming_game_name)
+            if check_game is None:
+                self.games.add_game(incoming_game_name, incoming_player_name, incoming_game_turn)
+                message = self.games.ping_gen(incoming_game_name, self.players)
                 await self.channel.send(message)
-            elif checked_id == False:
+                return 200
+            if check_game.active_player == incoming_player_name and check_game.turn_number == incoming_game_turn:
                 return 200
             else:
-                #Check for redundace ping
-                game_data = self.sql.get_game(checked_id)
-                game_data = list(game_data)
-                game_data[4] = None
-                game_note = self.sql.get_game_note(checked_id)
-                if game_data == [checked_id, game_name, civ_name, int(game_turn), None]:
-                    return 200
-                else:
-                    self.sql.update_game(checked_id, game_name, civ_name, game_turn, now)
-                    message = func.ping_gen(self, game_name, civ_name, game_turn, game_note)
-                    await self.channel.send(message)
-                    return 200
+                self.games.update_game(incoming_game_name, incoming_player_name, incoming_game_turn)
+                message = self.games.ping_gen(incoming_game_name, self.players)
+                await self.channel.send(message)
+                return 200
 
 
 
@@ -176,7 +139,4 @@ class Webserver(commands.Cog):
     @web_server.before_loop
     async def web_server_before_loop(self):
         await self.bot.wait_until_ready()
-        
-        
-        
         
