@@ -154,4 +154,6 @@ class CommandsHandler(commands.Cog):
             await ctx.respond("I've removed <@" + str(discord_id) + "> from the database")
         else:
             await ctx.respond("You are not in the player database.")
+
+
     

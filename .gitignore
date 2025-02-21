@@ -113,5 +113,6 @@ dmypy.json
 # End of common Python ignores
 
 expression.txt
+
 # JSON files
 *.json
