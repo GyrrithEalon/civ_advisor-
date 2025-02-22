@@ -112,7 +112,7 @@ class GameDB():
         if len(column_widths) == 4:
             for game in game_list:
                 for i in range(4):
-                    game[i] = game[i][:column_widths[i]-1]   
+                    game[i] = game[i][:column_widths[i]-2]   
         return t2a(header=["Game", "Player", "Turn", "Age"], body=game_list, column_widths=column_widths)
 
     def get_stale_games(self, stale_timer=36) -> list:
