@@ -77,7 +77,7 @@ class Webserver(commands.Cog):
                 games_to_ping = self.games.get_stale_games()
 
                 if len(games_to_ping) == 0:
-                    return 200
+                    return web.Response(status=200)
                 
                 # Open the file in read mode
                 with open("expression.txt", "r") as file:
@@ -101,7 +101,7 @@ class Webserver(commands.Cog):
                 for game in games_to_ping:
                     message = message + self.games.ping_gen(game.name,self.players) + "\n"
                 await self.channel.send(message)
-                return 200
+                return web.Response(status=200)
 
             # Check for new game
             check_game = self.games.get_game(incoming_game_name)
@@ -109,14 +109,14 @@ class Webserver(commands.Cog):
                 self.games.add_game(incoming_game_name, incoming_player_name, incoming_game_turn)
                 message = self.games.ping_gen(incoming_game_name, self.players)
                 await self.channel.send(message)
-                return 200
+                return web.Response(status=200)
             if check_game.active_player == incoming_player_name and check_game.turn_number == incoming_game_turn:
-                return 200
+                return web.Response(status=200)
             else:
                 self.games.update_game(incoming_game_name, incoming_player_name, incoming_game_turn)
                 message = self.games.ping_gen(incoming_game_name, self.players)
                 await self.channel.send(message)
-                return 200
+                return web.Response(status=200)
 
 
 
