@@ -166,7 +166,7 @@ class CommandsHandler(commands.Cog):
 
     
     @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
-    async def admin(self, ctx, cmd: str, cmd_args: json):
+    async def admin(self, ctx, cmd: str, cmd_args: str):
         """Use this command to run admin commands"""
         if not is_admin(ctx):
             await ctx.respond("You are not authorized to use this command")
