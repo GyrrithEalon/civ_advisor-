@@ -164,34 +164,22 @@ class CommandsHandler(commands.Cog):
 # =============================================================================
 
 
-    
-    @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
-    async def admin(self, ctx, cmd: str, cmd_args: str):
-        """Use this command to run admin commands"""
+    #remove game
+    @commands.slash_command(name='remove_game', guild_ids=[GUILD_ID])
+    async def remove_game(self, ctx, game_name: str):
+        """Remove a game from the database"""
         if not is_admin(ctx):
             await ctx.respond("You are not authorized to use this command")
             return
-        
-        cmd_args = json.loads(cmd_args)
-        
-        match cmd:
-            case "show_games":
-                await ctx.respond(self.games.get_all_games())
-            case "show_games_table":
-                await ctx.respond(self.games.make_table())
-            case "update_game":
-                try:
-                    self.games.update_game(cmd_args)
-                    await ctx.respond(f"I have updated **{cmd_args}**")
-                except Exception as e:
-                    await ctx.respond(f"Error: {e}")
-            case "remove_game":
-                try:
-                    self.games.remove_game(cmd_args)
-                    await ctx.respond(f"I have removed **{cmd_args}** from the database")
-                except Exception as e:
-                    await ctx.respond(f"Error: {e}, expected parm name:<name>")
-            case _:
-                await ctx.respond("Invalid command")
+        self.games.remove_game(game_name)
+        await ctx.respond(f"I have removed **{game_name}** from the database")
 
+    @commands.slash_command(name='update_game', guild_ids=[GUILD_ID])
+    async def update_game(self, ctx, game_name: str, player_name: str, turn: int):
+        """Update a game in the database"""
+        if not is_admin(ctx):
+            await ctx.respond("You are not authorized to use this command")
+            return
+        self.games.update_game(game_name, player_name, turn)
+        await ctx.respond(f"I have updated **{game_name}** in the database")
 
