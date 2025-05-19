@@ -5,6 +5,7 @@ Created on Mon Apr 10 14:10:43 2023
 @author: timsargent
 """
 
+import json
 import os
 from discord.ext import commands
 from discord.commands import Option
@@ -21,6 +22,8 @@ load_dotenv()
 GUILD = os.getenv('DISCORD_GUILD')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 EALON_ID = os.getenv('EALON_ID')
+def is_admin(ctx):
+    return ctx.author.id == EALON_ID
 
 # =============================================================================
 # Make a shell bot class
@@ -156,4 +159,39 @@ class CommandsHandler(commands.Cog):
             await ctx.respond("You are not in the player database.")
 
 
+# =============================================================================
+# Admin Commands
+# =============================================================================
+
+
     
+    @commands.slash_command(name='admin', guild_ids=[GUILD_ID])
+    async def admin(self, ctx, cmd: str, cmd_args: json):
+        """Use this command to run admin commands"""
+        if not is_admin(ctx):
+            await ctx.respond("You are not authorized to use this command")
+            return
+        
+        cmd_args = json.loads(cmd_args)
+        
+        match cmd:
+            case "show_games":
+                await ctx.respond(self.games.get_all_games())
+            case "show_games_table":
+                await ctx.respond(self.games.make_table())
+            case "update_game":
+                try:
+                    self.games.update_game(cmd_args)
+                    await ctx.respond(f"I have updated **{cmd_args}**")
+                except Exception as e:
+                    await ctx.respond(f"Error: {e}")
+            case "remove_game":
+                try:
+                    self.games.remove_game(cmd_args)
+                    await ctx.respond(f"I have removed **{cmd_args}** from the database")
+                except Exception as e:
+                    await ctx.respond(f"Error: {e}, expected parm name:<name>")
+            case _:
+                await ctx.respond("Invalid command")
+
+
