@@ -22,8 +22,6 @@ load_dotenv()
 GUILD = os.getenv('DISCORD_GUILD')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
 EALON_ID = os.getenv('EALON_ID')
-def is_admin(ctx):
-    return ctx.author.id == EALON_ID
 
 # =============================================================================
 # Make a shell bot class
@@ -168,7 +166,7 @@ class CommandsHandler(commands.Cog):
     @commands.slash_command(name='remove_game', guild_ids=[GUILD_ID])
     async def remove_game(self, ctx, game_name: str):
         """Remove a game from the database"""
-        if not is_admin(ctx):
+        if ctx.author.id != EALON_ID:
             await ctx.respond("You are not authorized to use this command")
             return
         self.games.remove_game(game_name)
@@ -177,9 +175,17 @@ class CommandsHandler(commands.Cog):
     @commands.slash_command(name='update_game', guild_ids=[GUILD_ID])
     async def update_game(self, ctx, game_name: str, player_name: str, turn: int):
         """Update a game in the database"""
-        if not is_admin(ctx):
+        if ctx.author.id != EALON_ID:
             await ctx.respond("You are not authorized to use this command")
             return
         self.games.update_game(game_name, player_name, turn)
         await ctx.respond(f"I have updated **{game_name}** in the database")
+
+    @commands.slash_command(name='show_games', guild_ids=[GUILD_ID])
+    async def show_games(self, ctx):
+        """Show all games in the database"""
+        if ctx.author.id != EALON_ID:
+            await ctx.respond("You are not authorized to use this command")
+            return
+        await ctx.respond(self.games.get_all_games())
 
