@@ -1,17 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 10 14:10:43 2023
-
-@author: timsargent
-"""
-
-import json
+# =============================================================================
+# This class is the cog for live discord interactions
+# =============================================================================
 import os
+import discord
 from discord.ext import commands
 from discord.commands import Option
 from dotenv import load_dotenv
 import random
-from table2ascii import table2ascii as t2a, PresetStyle
+from table2ascii import table2ascii as t2a
 from gamedb import GameDB
 from playerdb import PlayerDB
 
@@ -19,9 +15,8 @@ from playerdb import PlayerDB
 # Load Env
 # =============================================================================
 load_dotenv()
-GUILD = os.getenv('DISCORD_GUILD')
 GUILD_ID = os.getenv('DISCORD_GUILD_ID')
-EALON_ID = os.getenv('EALON_ID')
+ADMIN_ID = os.getenv('ADMIN_ID')
 
 # =============================================================================
 # Make a shell bot class
@@ -37,8 +32,10 @@ class CommandsHandler(commands.Cog):
        
     @commands.Cog.listener()
     async def on_ready(self):
-        #for multi Server access, will need to sort through connecte servers
-        self.guild = self.bot.guilds[0]
+        #for multi Server access, will need to sort through connected servers
+        self.guild = self.bot.guilds[0] #bot.guilds is a list of all discord servers the bot is allowed to access, we only use one
+        if int(self.guild.id) != int(GUILD_ID):
+            raise ValueError(f"Warning:Bot is not connected to the guild from .env: {GUILD_ID}")
         print(
             f'{self.bot.user.name} is connected to the following guild:\n'
             f'{self.guild.name}(id: {self.guild.id})'
@@ -75,6 +72,10 @@ class CommandsHandler(commands.Cog):
         """It's Over rated"""
         await ctx.respond("Access to water is overrated")    
 
+# =============================================================================
+# game note commands
+# =============================================================================
+
     @commands.slash_command(name='game_note', guild_ids=[GUILD_ID])
     async def set_game_note(self, ctx, game_name: str , game_note: str , 
                             overwrite_flag: Option(
@@ -98,12 +99,12 @@ class CommandsHandler(commands.Cog):
             for name in names:
                 table.append([name])
             text =  t2a(header=["Game Names"], body=table)
-            message = f"I could not find that name from my list, pick one of these names.\n```\n{text}\n```"
-            
+            message = f"I could not find that name in my list, pick one of these names.\n```\n{text}\n```"    
         else:
             if len(game_to_update.game_note) == 0 or overwrite_flag == "Yes":
-                self.games.update_game(game_to_update.name, game_note=game_note)
-                message = f"I have added your note to **{game_name}**"
+                self.games.update_game(game_to_update.name,
+                    game_note=discord.utils.escape_mentions(discord.utils.escape_markdown(game_note)))
+                message = f"I have made your note The Note for **{game_name}**"
                 
             elif delete_note == "Yes" and overwrite_flag == "Yes":
                 self.games.update_game(game_to_update.name, game_note="")
@@ -149,8 +150,8 @@ class CommandsHandler(commands.Cog):
     @commands.slash_command(name='remove-me', guild_ids=[GUILD_ID])
     async def remove_name(self, ctx):
         """Remove User to Player Registry"""
-        discord_id = ctx.author.id
-        if discord_id in self.players:
+        discord_id = str(ctx.author.id)
+        if self.players.get_name_by_discord_id(discord_id) is not None:
             self.players.remove_player(discord_id)
             await ctx.respond("I've removed <@" + str(discord_id) + "> from the database")
         else:
@@ -167,28 +168,44 @@ class CommandsHandler(commands.Cog):
     async def remove_game(self, ctx, game_name: str):
         """Remove a game from the database"""
         discord_id = ctx.author.id
-        if int(discord_id) != int(EALON_ID):
+        if int(discord_id) != int(ADMIN_ID):
             await ctx.respond("You are not authorized to use this command")
             return
-        self.games.remove_game(game_name)
-        await ctx.respond(f"I have removed **{game_name}** from the database")
+        if self.games.remove_game(game_name):
+            await ctx.respond(f"I have removed **{game_name}** from the database")
+        else:
+            table = self.games.get_all_game_names()
+            text =  t2a(header=["Game Names"], body=table)
+            message = f"I could not find that name in my list, pick one of these names.\n```\n{text}\n```"    
+            await ctx.respond(message)
 
     @commands.slash_command(name='update_game', guild_ids=[GUILD_ID])
     async def update_game(self, ctx, game_name: str, player_name: str, turn: int):
         """Update a game in the database"""
         discord_id = ctx.author.id
-        if int(discord_id) != int(EALON_ID):
+        if int(discord_id) != int(ADMIN_ID):
             await ctx.respond("You are not authorized to use this command")
             return
-        self.games.update_game(game_name, player_name, turn)
-        await ctx.respond(f"I have updated **{game_name}** in the database")
+        if self.games.update_game(game_name, player_name, turn):
+            await ctx.respond(f"I have updated **{game_name}** in the database")
+        else:
+            table = self.games.get_all_game_names()
+            text =  t2a(header=["Game Names"], body=table)
+            message = f"I could not find that name in my list, pick one of these names or create a new game.\n```\n{text}\n```"    
+            await ctx.respond(message)
 
-    @commands.slash_command(name='show_games', guild_ids=[GUILD_ID])
-    async def show_games(self, ctx):
+    @commands.slash_command(name='create_game', guild_ids=[GUILD_ID])
+    async def create_game(self, ctx, game_name: str, player_name: str, turn: int):
+        """Create a new game in the database"""
         discord_id = ctx.author.id
-        """Show all games in the database"""
-        if int(discord_id) != int(EALON_ID):
+        if int(discord_id) != int(ADMIN_ID):
             await ctx.respond("You are not authorized to use this command")
             return
-        await ctx.respond(self.games.get_all_games())
+        if self.games.add_game(game_name, player_name, turn):
+            await ctx.respond(f"I have created **{game_name}** in the database")
+        else:
+            table = self.games.get_all_game_names()
+            text =  t2a(header=["Game Names"], body=table)
+            message = f"I already have a game with that name, pick a different name.\n```\n{text}\n```"    
+            await ctx.respond(message)
 

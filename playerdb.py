@@ -62,6 +62,6 @@ class PlayerDB():
                 return player.discord_id
         return None
 
-    def make_table(self):
+    def make_table(self) -> str:
         data = [player.to_list() for player in self.players.values()]
         return t2a(header=["Discord ID", "Name"], body=data, column_widths=None)

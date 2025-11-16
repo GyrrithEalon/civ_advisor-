@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 11 15:12:48 2023
-
-@author: Ealon
-"""
-#Start Code
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -12,12 +5,6 @@ from bot import CommandsHandler
 from webserver import Webserver
 from gamedb import GameDB
 from playerdb import PlayerDB
-
-
-
-
-
-
 
 # =============================================================================
 # Load Env

@@ -1,8 +1,17 @@
 import json
 import os
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from playerdb import PlayerDB
 from table2ascii import table2ascii as t2a
+
+
+load_dotenv()
+STALE_TIMER = os.getenv('STALE_TIMER_HOURS')
+if STALE_TIMER is None:
+    STALE_TIMER = 36
+else:
+    STALE_TIMER = int(STALE_TIMER)
 
 class Game():
     def __init__(self, name, active_player, turn_number, last_updated, game_note=""):
@@ -27,7 +36,7 @@ class Game():
     def from_dict(cls, name, data):
         return cls(name, data['active_player'], data['turn_number'], data['last_updated'], data['game_note'])
 
-    def is_stale(self, stale_timer=36) -> bool:
+    def is_stale(self, stale_timer=STALE_TIMER) -> bool:
         stale_timer = timedelta(hours=stale_timer)
         age = datetime.now() - datetime.strptime(self.last_updated, '%Y-%m-%dT%H:%M:%S.%f')
         return age > stale_timer
@@ -43,9 +52,15 @@ class Game():
         elif delta < timedelta(days=1):
             #under a day, show hour
             return str(divmod(delta.seconds, 3600)[0]) + "h"
-        else:
-            #Show Days
+        elif delta < timedelta(days=100):
+            #under the 2 char space for time display
             return str(delta.days) + "d"
+        elif delta < timedelta(days=30 * 100):
+            #under the 2 char space for time display
+            return str(divmod(delta.days, 30)[0]) + "M"
+        else:
+            #over the 2 char space for time display
+            return str(divmod(delta.days, 365)[0]) + "Y"
         
     def data_formated(self) -> list:
         return [self.name, self.active_player, self.turn_number, self.age_formated()]
@@ -69,12 +84,14 @@ class GameDB():
         with open(self.file_path, 'w') as file:
             json.dump({name: game.to_dict() for name, game in self.games.items()}, file, indent=4)
 
-    def add_game(self, name, active_player, turn_number, game_note="") -> None:
+    def add_game(self, name, active_player, turn_number, game_note="") -> bool:
         if name not in self.games:
             self.games[name] = Game(str(name), str(active_player), str(turn_number), datetime.now().isoformat(), str(game_note))
             self.save_games()
+            return True
+        return False
 
-    def update_game(self, name, active_player=None, turn_number=None, game_note=None) -> None:
+    def update_game(self, name, active_player=None, turn_number=None, game_note=None) -> bool:
         if name in self.games:
             game = self.games[name]
             if active_player is not None:
@@ -85,6 +102,8 @@ class GameDB():
                 game.game_note = str(game_note)
             game.last_updated = datetime.now().isoformat()
             self.save_games()
+            return True
+        return False
 
     def update_note_game(self, name, game_note) -> None:
         if name in self.games:
@@ -92,10 +111,12 @@ class GameDB():
             game.game_note = str(game_note)
             self.save_games()
 
-    def remove_game(self, name) -> None:
+    def remove_game(self, name) -> bool:
         if name in self.games:
             del self.games[name]
             self.save_games()
+            return True
+        return False
 
     def get_game(self, name) -> Game:
         return self.games.get(name)
@@ -115,11 +136,17 @@ class GameDB():
                     game[i] = game[i][:column_widths[i]-2]   
         return t2a(header=["Game", "Player", "Turn", "Age"], body=game_list, column_widths=column_widths)
 
-    def get_stale_games(self, stale_timer=36) -> list:
+    def get_stale_games(self, stale_timer=36) -> list[Game]:
         return [game for game in self.games.values() if game.is_stale(stale_timer)]
     
-    def get_games_with_notes(self) -> list:
+    def get_games_with_notes(self) -> list[Game]:
         return [game for game in self.games.values() if len(game.game_note) > 0]
+
+    def get_all_game_names(self) -> list:
+        table = []
+        for game in self.games.values():
+            table.append([game.name])
+        return table
         
     def ping_gen(self, game_name, playerDB: PlayerDB) -> str:        
     # Generate ping

@@ -2,3 +2,4 @@ py-cord
 nest_asyncio
 python-dotenv
 table2ascii
+aiohttp
